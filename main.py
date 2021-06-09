@@ -24,7 +24,8 @@ def assume_iam_role(aws_account_id):
 
     log.info('Assumed role to aws account id: %s', aws_account_id)
 
-    session = boto3.Session(profile_name='ec2-check-maintenance-scheduled')
+    # session = boto3.Session(profile_name='ec2-check-maintenance-scheduled')
+    session = boto3.Session(aws_access_key_id = os.getenv('AWS_KEY_ID'), aws_secret_access_key = os.getenv('AWS_KEY_SECRET'))
     sts_client = session.client('sts')
 
     # Call the assume_role method of the STSConnection object and pass the role
