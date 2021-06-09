@@ -1,5 +1,6 @@
 # https://github.com/ronidas39/jira_automation/blob/main/tutorial1.py
 
+from typing import Dict
 import requests
 from requests.auth import HTTPBasicAuth
 import json
