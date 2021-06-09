@@ -6,6 +6,7 @@ import json
 import boto3
 import logging
 import os
+from datetime import date
 
 APP_VERSION = "1.0.0"
 
@@ -128,6 +129,8 @@ def create_jira_ticket(project,description):
         "Content-Type": "application/json"
     }
 
+    summary = "EC2 instances maintenance scheduled " + today.strftime("%d/%m/%Y")
+
     payload=json.dumps(
         {
         "fields": {
@@ -135,7 +138,7 @@ def create_jira_ticket(project,description):
         {
             "key": str(project)
         },
-        "summary": "EC2 instances maintenance scheduled",
+        "summary": summary,
         "description": {
           "type": "doc",
           "version": 1,
