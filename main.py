@@ -59,7 +59,7 @@ def get_aws_regions(credentials,region):
 def fill_in_report(content,event,key):
     try:
         content += key + ": " + str(event[key]) + "\n"
-        log.info('%a: %s', key, str(event[key]))
+        log.info('%$: %s', key, str(event[key]))
     except:
         log.error('Key %s is not accessible', key)
     
