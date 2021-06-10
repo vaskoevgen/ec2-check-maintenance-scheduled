@@ -179,6 +179,7 @@ def start():
         for region in list_regions:
             description += get_ec2_events(account, credentials, region)
 
+    print("")
     print(description)
     # create_jira_ticket("DO", description)
         
