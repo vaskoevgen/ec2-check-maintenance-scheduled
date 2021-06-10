@@ -16,6 +16,8 @@ AWS EC2 get events status about maintenance scheduled and create Jira ticket
 
 IAM Role `EC2-check-maintenance-scheduled` from source account:
 
+EC2-check-maintenance-scheduled-assume-role
+
 ```
 {
     "Version": "2012-10-17",
@@ -33,7 +35,18 @@ IAM Role `EC2-check-maintenance-scheduled` from source account:
             "Resource": [
                 "arn:aws:iam::{aws_destination_account_id}:role/EC2-check-maintenance-scheduled"
             ]
-        },
+        }
+    ]
+}
+
+```
+
+Policy: check-maintenance-scheduled-ec2
+
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
         {
             "Sid": "VisualEditor0",
             "Effect": "Allow",
@@ -52,6 +65,8 @@ IAM Role `EC2-check-maintenance-scheduled` from source account:
     ]
 }
 ```
+
+
 
 IAM Role `EC2-check-maintenance-scheduled` from destination account:
 
