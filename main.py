@@ -170,9 +170,8 @@ def start():
 
     log.info("ec2-check-maintenance-scheduled v%s started", APP_VERSION)
 
-    list_aws_accounts = [
-        os.getenv('LIST_AWS_ACCOUNTS')
-    ]
+    list_aws_accounts = str(os.getenv('LIST_AWS_ACCOUNTS')).split(",")
+
     description = ""
     for account in list_aws_accounts:
         credentials = assume_iam_role(account)
