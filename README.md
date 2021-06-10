@@ -33,6 +33,21 @@ IAM Role `EC2-check-maintenance-scheduled` from source account:
             "Resource": [
                 "arn:aws:iam::{aws_destination_account_id}:role/EC2-check-maintenance-scheduled"
             ]
+        },
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": "ec2:DescribeInstanceStatus",
+            "Resource": "*"
+        },
+        {
+            "Sid": "VisualEditor1",
+            "Effect": "Allow",
+            "Action": [
+                "ec2:DescribeAvailabilityZones",
+                "ec2:DescribeRegions"
+            ],
+            "Resource": "*"
         }
     ]
 }
