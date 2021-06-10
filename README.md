@@ -11,12 +11,12 @@ AWS EC2 get events status about maintenance scheduled and create Jira ticket
 
 `JIRA_API_TOKEN` = jira api token
 
-`LIST_AWS_ACCOUNTS` = aws_account_id_1, aws_account_id_2, ...
+`LIST_AWS_ACCOUNTS` = aws_account_id_1,aws_account_id_2, ...
 
 
-IAM Role `EC2-check-maintenance-scheduled` from source account:
+IAM USER Role `EC2-check-maintenance-scheduled` from source account:
 
-EC2-check-maintenance-scheduled-assume-role
+Policy: `EC2-check-maintenance-scheduled-assume-role`
 
 ```
 {
@@ -41,7 +41,9 @@ EC2-check-maintenance-scheduled-assume-role
 
 ```
 
-Policy: check-maintenance-scheduled-ec2
+IAM  Role `EC2-check-maintenance-scheduled` from source account:
+
+Policy: `check-maintenance-scheduled-ec2`
 
 ```
 {
