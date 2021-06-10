@@ -129,7 +129,7 @@ def create_jira_ticket(project,description):
         "Content-Type": "application/json"
     }
 
-    summary = "EC2 instances maintenance scheduled " + date.today()
+    summary = "EC2 instances maintenance scheduled " + str(date.today())
 
     payload=json.dumps(
         {
