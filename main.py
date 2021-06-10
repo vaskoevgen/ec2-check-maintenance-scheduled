@@ -177,9 +177,9 @@ def start():
         credentials = assume_iam_role(account)
         list_regions = get_aws_regions(credentials, "us-east-1")
         for region in list_regions:
-            description += get_ec2_events(account, credentials, region) + "---\n"
+            description += get_ec2_events(account, credentials, region)
 
-    create_jira_ticket("DO", description)
+    # create_jira_ticket("DO", description)
         
     log.info("ec2-check-maintenance-scheduled finished")
 
