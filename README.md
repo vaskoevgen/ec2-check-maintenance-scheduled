@@ -26,14 +26,14 @@ Policy: `EC2-check-maintenance-scheduled-assume-role`
             "Effect": "Allow",
             "Action": "iam:PassRole",
             "Resource": [
-                "arn:aws:iam::{aws_destination_account_id}:role/EC2-check-maintenance-scheduled"
+                "arn:aws:iam::*:role/EC2-check-maintenance-scheduled"
             ]
         },
         {
             "Effect": "Allow",
             "Action": "sts:AssumeRole",
             "Resource": [
-                "arn:aws:iam::{aws_destination_account_id}:role/EC2-check-maintenance-scheduled"
+                "arn:aws:iam::*:role/EC2-check-maintenance-scheduled"
             ]
         }
     ]
