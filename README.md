@@ -1,6 +1,22 @@
 # ec2-check-maintenance-scheduled
 AWS EC2 get events status about maintenance scheduled and create Jira ticket
 
+Set virtual environment:
+
+```
+pip3 install virtualenv
+
+python3 -m venv venv
+
+source venv/bin/activate
+
+pip3 install boto3 requests python-dotenv
+
+pip3 freeze > requirements.txt
+```
+
+Environment variables:
+
 `AWS_KEY_ID` = aws key id
 
 `AWS_KEY_SECRET` = aws key secret

@@ -6,9 +6,13 @@ import json
 import boto3
 import logging
 import os
+import sys
 from datetime import date
+# from dotenv import load_dotenv, find_dotenv
 
 APP_VERSION = "1.0.0"
+
+# load_dotenv(find_dotenv())
 
 def init_logger(name, level):
     logger = logging.getLogger(name)
@@ -21,27 +25,30 @@ def init_logger(name, level):
     logger.addHandler(console_handler)
     return logger
 
-def assume_iam_role(aws_account_id):
+def assume_iam_role(aws_account_id,role):
 
     log.info('Assumed role to aws account id: %s', aws_account_id)
 
-    # session = boto3.Session(profile_name='ec2-check-maintenance-scheduled')
-    session = boto3.Session(aws_access_key_id = os.getenv('AWS_KEY_ID'), aws_secret_access_key = os.getenv('AWS_KEY_SECRET'))
+    session = boto3.Session(
+        aws_access_key_id = os.getenv('AWS_KEY_ID'), 
+        aws_secret_access_key = os.getenv('AWS_KEY_SECRET'))
     sts_client = session.client('sts')
 
     # Call the assume_role method of the STSConnection object and pass the role
     # ARN and a role session name.
     assumed_role_object=sts_client.assume_role(
-        RoleArn="arn:aws:iam::" + aws_account_id + ":role/EC2-check-maintenance-scheduled",
+        RoleArn="arn:aws:iam::" + aws_account_id + ":role/" + role,
         RoleSessionName="AssumeRoleSession"
     )
 
     # From the response that contains the assumed role, get the temporary 
     # credentials that can be used to make subsequent API calls
     credentials=assumed_role_object['Credentials']
+
     return credentials
 
 def get_aws_regions(credentials,region):
+
     ec2_client = boto3.client(
         'ec2',
         region_name=region,
@@ -49,13 +56,15 @@ def get_aws_regions(credentials,region):
         aws_secret_access_key=credentials['SecretAccessKey'],
         aws_session_token=credentials['SessionToken']
     )
+
     # Retrieves all regions/endpoints that work with EC2
     response = ec2_client.describe_regions()
-    list_regions = list()
+    regions = list()
+    
     for i in response["Regions"]:
-        list_regions.append(i["RegionName"])
+        regions.append(i["RegionName"])
 
-    return list_regions
+    return regions
 
 def fill_in_report(content,event,key):
     try:
@@ -67,6 +76,7 @@ def fill_in_report(content,event,key):
     return content
 
 def get_ec2_events(account,credentials,region):
+
     ec2_client = boto3.client(
         'ec2',
         region_name=region,
@@ -102,22 +112,23 @@ def get_ec2_events(account,credentials,region):
 
         for event in events:
             if count == 0:
+                description += "\n"
                 description += "AWS accountId: " + account + "\n"
                 log.info('AWS accountId: %s', account)
                 
-                description += "AWS region: " + region + "\n"
+                description += " "*2+"AWS region: " + region + "\n"
                 log.info('AWS region: %s', region)
 
-                description += "InstanceId: " + instance['InstanceId'] + "\n"
+                description += " "*4+"InstanceId: " + instance['InstanceId'] + "\n"
                 log.info('InstanceId: %s', instance['InstanceId'])
                 count = 1
 
-            description = fill_in_report(description +" "*2,event,"InstanceEventId")
-            description = fill_in_report(description +" "*2,event,"Code")
-            description = fill_in_report(description +" "*2,event,"Description")
-            description = fill_in_report(description +" "*2,event,"NotAfter")
-            description = fill_in_report(description +" "*2,event,"NotBefore")
-            description = fill_in_report(description +" "*2,event,"NotBeforeDeadline")
+            description = fill_in_report(description +" "*6,event,"InstanceEventId")
+            description = fill_in_report(description +" "*8,event,"Code")
+            description = fill_in_report(description +" "*8,event,"Description")
+            description = fill_in_report(description +" "*8,event,"NotAfter")
+            description = fill_in_report(description +" "*8,event,"NotBefore")
+            description = fill_in_report(description +" "*8,event,"NotBeforeDeadline")
 
     return description
 
@@ -129,7 +140,7 @@ def create_jira_ticket(project,description):
         "Content-Type": "application/json"
     }
 
-    summary = "EC2 instances maintenance scheduled " + str(date.today())
+    summary = "EC2 instances maintenance scheduled" + "[task from " + str(date.today()) + "]"
 
     payload=json.dumps(
         {
@@ -162,28 +173,40 @@ def create_jira_ticket(project,description):
     )
     response=requests.post(url,headers=headers,data=payload,auth=(os.getenv('EMAIL_ADDRESS'),os.getenv('JIRA_API_TOKEN')))
     data=response.json()
-    print(data) 
+    log.info("Jira task created: %s", data)
 
-def start():
+def check_requirements(input_vars):
+    # validate inputs
+    for input_var in input_vars:
+        if not os.environ[input_var]:
+            log.critical('variable %s is empty',input_var)
+            sys.exit(1)
+
+def lambda_handler(event, context):
     global log
     log = init_logger('main', 'INFO')
 
     log.info("ec2-check-maintenance-scheduled v%s started", APP_VERSION)
+    
+    input_vars = ['LIST_AWS_ACCOUNTS','EMAIL_ADDRESS','JIRA_API_TOKEN','AWS_KEY_ID','AWS_KEY_SECRET','JIRA_URL']
+    check_requirements(input_vars)
 
-    list_aws_accounts = str(os.getenv('LIST_AWS_ACCOUNTS')).split(",")
+    aws_accounts = str(os.getenv('LIST_AWS_ACCOUNTS')).split(",")
 
     description = ""
-    for account in list_aws_accounts:
-        credentials = assume_iam_role(account)
-        list_regions = get_aws_regions(credentials, "us-east-1")
-        for region in list_regions:
+
+    for account in aws_accounts:
+        credentials = assume_iam_role(account,"EC2-check-maintenance-scheduled")
+
+        regions = get_aws_regions(credentials, "us-east-1")
+
+        for region in regions:
             description += get_ec2_events(account, credentials, region)
 
-    print("")
     print(description)
-    # create_jira_ticket("DO", description)
+    create_jira_ticket("DO", description)
         
     log.info("ec2-check-maintenance-scheduled finished")
 
 if __name__ == '__main__':
-    start()
+    lambda_handler("", "")
